@@ -1,6 +1,8 @@
 import json
 import sys
 
+COMMUTATIVE_OPERATOR = 'add', 'mul', 'sub'
+
 class lvn_table_value:
     def __init__(self, op, value, index1, index2):
         self.op = op
@@ -62,7 +64,10 @@ def lvn(function):
             elif 'args' in instr:
                 result = [name2index.get(item, item) for item in instr['args']]
                 if len(result) == 2 and result[1] not in name2index:
-                    val = lvn_table_value(instr['op'], None, result[0], result[1])
+                    if result[0] < result[1]:
+                        val = lvn_table_value(instr['op'], None, result[0], result[1])
+                    else:
+                        val = lvn_table_value(instr['op'], None, result[1], result[0])
                     if 'dest' in instr:
                         if my_table.doesnot_have(val):
                             count = count + 1
