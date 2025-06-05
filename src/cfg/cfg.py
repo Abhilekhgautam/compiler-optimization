@@ -3,25 +3,33 @@ import sys
 
 TERMINATORS = 'br', 'jmp', 'ret'
 
-# create a cfg:
+class Block:
+    def __init__(self, name, instrs, predecessors, successors):
+        self.name = name
+        self.instrs = instrs
+        self.predecessors = predecessors
+        self.successors = successors;
 
+# create a cfg:
 def get_cfg(block_map):
-    out = {}
+    out = []
     for index, (name, block) in enumerate(block_map.items()):
         # get the last instruction
         last_instr = block[-1]
+        predecessors = [block.name for block in out if name in block.successors]
         if last_instr['op'] in ('jmp', 'br'):
-            out[name] = last_instr['labels']
-            print(out[name])
+            block = Block(name, block, predecessors, last_instr['labels'])
+            # out[name] = last_instr['labels']
+            #print(out[name])
             # print(last_instr['labels'][0])
         elif last_instr['op'] == 'ret':
-            out[name] = []
+            block = Block(name, block, predecessors, [])
         else:
             if index + 1 == len(block_map):
-                out[name] = []
+                block = Block(name, block, predecessors, [])
             else:
-                print("Inside if of else")
-                out[name] = [list(block_map)[index + 1]]
+                block = Block(name, block, predecessors, list(block_map)[index + 1])
+        out.append(block)        
     return out
 
 
@@ -29,13 +37,14 @@ def get_cfg(block_map):
 def block_map(blocks):
     out = {}
     for block in blocks:
-        if 'label' in block[0]:
-            name = block[0]['label']
-            block = block[1:]
-        else:
-            name = 'b{}'.format(len(out))
+        if len(block) >= 1:
+            if 'label' in block[0]:
+                name = block[0]['label']
+                block = block[1:]
+            else:
+                name = 'b{}'.format(len(out))
 
-        out[name] = block
+            out[name] = block
     return out
 
 def form_block(body):
@@ -56,13 +65,15 @@ def form_block(body):
     yield cur_block
 
 
-def mycfg():
-    prog = json.load(sys.stdin)
+def mycfg(prog):
+    #prog = json.load(sys.stdin)
+    blocks = []
     for func in prog['functions']:
         val = block_map(form_block(func))
-        print(get_cfg(val))
+        blocks.append(get_cfg(val))
+    return blocks
 
 if __name__ == '__main__':
-    mycfg()
+    mycfg({})
 
 
