@@ -51,7 +51,7 @@ def reaching_defn():
             prev_output = OUT[block.name]
             OUT[block.name] = Union([definition.name for definition in gen_b], Diff(IN[block.name], [definition.name for definition in kill_b]))
 
-            if not Diff(prev_output, OUT[block.name]) : 
+            if not Diff(OUT[block.name], prev_output) : 
                 has_out_changed = False;
             else:
                 has_out_changed = True
