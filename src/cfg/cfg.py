@@ -16,20 +16,25 @@ def get_cfg(block_map):
     for index, (name, block) in enumerate(block_map.items()):
         # get the last instruction
         last_instr = block[-1]
-        predecessors = [block.name for block in out if name in block.successors]
         if last_instr['op'] in ('jmp', 'br'):
-            block = Block(name, block, predecessors, last_instr['labels'])
+            block = Block(name, block, [], last_instr['labels'])
             # out[name] = last_instr['labels']
             #print(out[name])
             # print(last_instr['labels'][0])
         elif last_instr['op'] == 'ret':
-            block = Block(name, block, predecessors, [])
+            block = Block(name, block, [], [])
         else:
             if index + 1 == len(block_map):
-                block = Block(name, block, predecessors, [])
+                block = Block(name, block, [], [])
             else:
-                block = Block(name, block, predecessors, list(block_map)[index + 1])
-        out.append(block)        
+                block = Block(name, block, [], list(block_map)[index + 1])
+        out.append(block)     
+
+    for index, (name, block) in enumerate(block_map.items()):
+        blk = out[index]
+        predecessors = [block.name for block in out if name in block.successors]
+        blk.predecessors = predecessors
+
     return out
 
 
